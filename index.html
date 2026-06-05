@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Onboarding | Deneb & Pollux HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span>D&P</span>
+      Deneb & Pollux HR
+    </div>
+    <nav class="topbar-nav">
+      <a href="#" class="active">Employee Onboarding</a>
+    </nav>
+  </div>
+
+  <main class="page-wrap">
+    <section class="page-header">
+      <span class="badge">Onboarding Form</span>
+      <h1>Employee Inception & Document Submission</h1>
+      <p>Please fill in your information and upload the required documents for onboarding.</p>
+    </section>
+
+    <form id="onboardingForm" class="card">
+      <div class="section-title">
+        <div class="section-num">1</div>
+        <h2>Personal Information</h2>
+      </div>
+      <div class="form-grid">
+        <div class="field span-2">
+          <label for="fullName">Full Name</label>
+          <input id="fullName" name="fullName" type="text" required>
+        </div>
+        <div class="field">
+          <label for="dob">Date of Birth</label>
+          <input id="dob" name="dob" type="date" required>
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <div class="radio-group">
+            <label class="radio-item"><input type="radio" name="gender" value="Male" checked> Male</label>
+            <label class="radio-item"><input type="radio" name="gender" value="Female"> Female</label>
+            <label class="radio-item"><input type="radio" name="gender" value="Other"> Other</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Marital Status</label>
+          <div class="radio-group">
+            <label class="radio-item"><input type="radio" name="maritalStatus" value="Single" checked> Single</label>
+            <label class="radio-item"><input type="radio" name="maritalStatus" value="Married"> Married</label>
+            <label class="radio-item"><input type="radio" name="maritalStatus" value="Other"> Other</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Personal Email</label>
+          <input id="email" name="email" type="email" required>
+        </div>
+        <div class="field">
+          <label for="phone">Contact Number</label>
+          <input id="phone" name="phone" type="tel" required>
+        </div>
+        <div class="field span-2">
+          <label for="currentAddress">Current Address</label>
+          <textarea id="currentAddress" name="currentAddress" required></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="permanentAddress">Permanent Address</label>
+          <textarea id="permanentAddress" name="permanentAddress" required></textarea>
+        </div>
+        <div class="field">
+          <label for="emergencyName">Emergency Contact Name</label>
+          <input id="emergencyName" name="emergencyName" type="text" required>
+        </div>
+        <div class="field">
+          <label for="emergencyPhone">Emergency Contact Number</label>
+          <input id="emergencyPhone" name="emergencyPhone" type="tel" required>
+        </div>
+        <div class="field span-2">
+          <label for="emergencyRelation">Relationship with Emergency Contact</label>
+          <input id="emergencyRelation" name="emergencyRelation" type="text" required>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <div class="section-num">3</div>
+        <h2>Identification Details</h2>
+      </div>
+      <div class="form-grid cols-1">
+        <div class="field">
+          <label>Type of ID</label>
+          <div class="check-group id-grid">
+            <label class="check-item"><input type="checkbox" name="idTypes" value="Passport"> Passport</label>
+            <label class="check-item"><input type="checkbox" name="idTypes" value="Aadhaar"> Aadhaar</label>
+            <label class="check-item"><input type="checkbox" name="idTypes" value="Drivers License"> Driver’s License</label>
+            <label class="check-item"><input type="checkbox" name="idTypes" value="House Rent Agreement"> House rent agreement</label>
+            <label class="check-item"><input type="checkbox" name="idTypes" value="Electricity Bill"> Electricity bill</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="idDocument">Upload ID Document</label>
+          <div class="file-drop" data-max="1">
+            <div class="icon">📎</div>
+            <div class="label">Click or drop a file here</div>
+            <div class="hint">Accepted: PDF, JPG, PNG</div>
+            <input id="idDocument" name="idDocument" type="file" accept=".pdf,image/*">
+            <div class="file-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <div class="section-num">4</div>
+        <h2>Education Details</h2>
+      </div>
+      <div class="form-grid">
+        <div class="field span-2">
+          <label for="collegeName">College / University Name</label>
+          <input id="collegeName" name="collegeName" type="text" required>
+        </div>
+        <div class="field">
+          <label for="graduationYear">Year of Graduation</label>
+          <select id="graduationYear" name="graduationYear" required>
+            <option value="">Select year</option>
+          </select>
+        </div>
+        <div class="field span-2">
+          <label for="degreeFile">Highest Degree Certificate</label>
+          <input id="degreeFile" name="degreeFile" type="file" accept=".pdf,image/*" required>
+          <div class="file-list"></div>
+        </div>
+        <div class="field span-2">
+          <label for="marksheetFiles">Marksheet / Transcript (all years)</label>
+          <input id="marksheetFiles" name="marksheetFiles" type="file" accept=".pdf,image/*" multiple required>
+          <div class="file-list"></div>
+        </div>
+        <div class="field">
+          <label for="tenthFile">10th Certificate</label>
+          <input id="tenthFile" name="tenthFile" type="file" accept=".pdf,image/*" required>
+          <div class="file-list"></div>
+        </div>
+        <div class="field">
+          <label for="twelfthFile">12th Certificate</label>
+          <input id="twelfthFile" name="twelfthFile" type="file" accept=".pdf,image/*" required>
+          <div class="file-list"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <div class="section-num">5</div>
+        <h2>Work Experience</h2>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="experienceYears">Total Experience (Years)</label><input id="experienceYears" name="experienceYears" type="number" min="0" step="0.1"></div>
+        <div class="field"><label for="previousEmployer">Previous Employer Name</label><input id="previousEmployer" name="previousEmployer" type="text"></div>
+        <div class="field"><label for="designation">Designation</label><input id="designation" name="designation" type="text"></div>
+        <div class="field"><label for="department">Department</label><input id="department" name="department" type="text"></div>
+        <div class="field"><label for="workLocation">Work Location</label><input id="workLocation" name="workLocation" type="text"></div>
+        <div class="field span-2"><label for="reportingManager">Reporting Manager Name and Number</label><input id="reportingManager" name="reportingManager" type="text"></div>
+        <div class="field"><label for="workStart">Work Start Date</label><input id="workStart" name="workStart" type="date"></div>
+        <div class="field"><label for="workEnd">Work End Date</label><input id="workEnd" name="workEnd" type="date"></div>
+        <div class="field span-2"><label>Employment Type</label><div class="radio-group"><label class="radio-item"><input type="radio" name="employmentType" value="Full-time" checked> Full-time</label><label class="radio-item"><input type="radio" name="employmentType" value="Contract"> Contract</label><label class="radio-item"><input type="radio" name="employmentType" value="Intern"> Intern</label></div></div>
+        <div class="field span-2"><label for="leavingReason">Reason of leaving</label><textarea id="leavingReason" name="leavingReason"></textarea></div>
+        <div class="field span-2">
+          <label for="experienceLetters">Experience Letter(s)</label>
+          <input id="experienceLetters" name="experienceLetters" type="file" accept=".pdf,image/*" multiple>
+          <div class="file-list"></div>
+        </div>
+        <div class="field span-2">
+          <label for="relievingLetters">Relieving Letter(s)</label>
+          <input id="relievingLetters" name="relievingLetters" type="file" accept=".pdf,image/*" multiple>
+          <div class="file-list"></div>
+        </div>
+        <div class="field span-2">
+          <label for="salarySlips">Last 3 Months Salary Slips / Account Statement</label>
+          <input id="salarySlips" name="salarySlips" type="file" accept=".pdf,image/*" multiple>
+          <div class="file-list"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <div class="section-num">6</div>
+        <h2>Banking Details</h2>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="bankName">Bank Name</label><input id="bankName" name="bankName" type="text"></div>
+        <div class="field"><label for="branchName">Branch</label><input id="branchName" name="branchName" type="text"></div>
+        <div class="field"><label for="accountName">Account Holder Name</label><input id="accountName" name="accountName" type="text"></div>
+        <div class="field"><label for="accountNumber">Account Number</label><input id="accountNumber" name="accountNumber" type="text"></div>
+        <div class="field"><label for="ifsc">IFSC / Routing Number</label><input id="ifsc" name="ifsc" type="text"></div>
+        <div class="field span-2">
+          <label for="cancelledCheque">Cancelled Cheque</label>
+          <input id="cancelledCheque" name="cancelledCheque" type="file" accept=".pdf,image/*">
+          <div class="file-list"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <div class="section-num">7</div>
+        <h2>References & Consent</h2>
+      </div>
+      <div class="form-grid cols-1">
+        <div class="field"><label for="reference1">Reference 1 (Name, Contact, Email)</label><textarea id="reference1" name="reference1"></textarea></div>
+        <div class="field"><label for="reference2">Reference 2 (Name, Contact, Email)</label><textarea id="reference2" name="reference2"></textarea></div>
+        <label class="check-item"><input id="consent" name="consent" type="checkbox" required> I Agree to background check</label>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <div class="section-num">8</div>
+        <h2>Document Submission</h2>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="addressProof">Upload Address Proof</label><input id="addressProof" name="addressProof" type="file" accept=".pdf,image/*"><div class="file-list"></div></div>
+        <div class="field"><label for="photo">Passport Size Photograph</label><input id="photo" name="photo" type="file" accept="image/*"><div class="file-list"></div></div>
+        <div class="field span-2"><label for="additionalCerts">Additional Certifications</label><input id="additionalCerts" name="additionalCerts" type="file" accept=".pdf,image/*" multiple><div class="file-list"></div></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+        <button type="button" id="resetButton" class="btn btn-ghost">Reset Form</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
