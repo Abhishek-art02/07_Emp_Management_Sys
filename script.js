@@ -18,10 +18,21 @@ function updateFileList(input) {
   if (!list) return;
   list.innerHTML = '';
   if (input.files.length === 0) return;
-  Array.from(input.files).forEach(file => {
-    const tag = document.createElement('span');
+  Array.from(input.files).forEach((file, idx) => {
+    const tag = document.createElement('div');
     tag.className = 'file-tag';
-    tag.textContent = file.name;
+    const fileName = file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name;
+    tag.innerHTML = `<span title="${file.name}">${fileName}</span><button type="button" data-index="${idx}">×</button>`;
+    
+    tag.querySelector('button').addEventListener('click', (e) => {
+      e.preventDefault();
+      const dt = new DataTransfer();
+      Array.from(input.files).forEach((f, i) => {
+        if (i !== idx) dt.items.add(f);
+      });
+      input.files = dt.files;
+      updateFileList(input);
+    });
     list.appendChild(tag);
   });
 }
@@ -46,17 +57,19 @@ function handleFileInputs() {
     if (dropContainer) {
       dropContainer.addEventListener('dragover', e => {
         e.preventDefault();
-        dropContainer.style.borderColor = 'var(--brand)';
+        dropContainer.classList.add('drag-over');
       });
       dropContainer.addEventListener('dragleave', () => {
-        dropContainer.style.borderColor = '';
+        dropContainer.classList.remove('drag-over');
       });
       dropContainer.addEventListener('drop', e => {
         e.preventDefault();
-        dropContainer.style.borderColor = '';
+        dropContainer.classList.remove('drag-over');
         const files = Array.from(e.dataTransfer.files);
         if (files.length === 0) return;
-        input.files = e.dataTransfer.files;
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f));
+        input.files = dt.files;
         updateFileList(input);
       });
     }
