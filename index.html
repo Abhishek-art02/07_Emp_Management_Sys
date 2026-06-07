@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>HR Portal - Preview</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- React (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel to transpile JSX in-browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+      // Load the JSX file, replace the `import { ... } from "react"` line with React globals,
+      // strip `export default` from App, then transpile with Babel and run.
+      fetch('/hr-portal-production.jsx')
+        .then(r => r.text())
+        .then(code => {
+          // Replace the import from react with React globals
+          code = code.replace(/import\s+\{[^}]*\}\s+from\s+["']react["'];?\n?/, 'const {useState,useEffect,useRef,useCallback} = React;\n');
+
+          // Remove `export default` before function App so App is defined in global scope
+          code = code.replace(/export\s+default\s+function\s+App\s*\(/, 'function App(');
+
+          // Append mounting code
+          code += '\n\nconst root = document.getElementById("root");\nReactDOM.createRoot(root).render(React.createElement(App));\n';
+
+          const transformed = Babel.transform(code, { presets: ['react'] }).code;
+          const s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.text = transformed;
+          document.body.appendChild(s);
+        })
+        .catch(err => {
+          document.body.innerHTML = '<pre style="color:crimson">Failed to load component:\n' + String(err) + '</pre>';
+          console.error(err);
+        });
+    </script>
+  </body>
+</html>
