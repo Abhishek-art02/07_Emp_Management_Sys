@@ -1306,6 +1306,785 @@ function Reports({ toast }) {
   );
 }
 
+// ─── DEMO DATA: HANDOVERS & DOCUMENTS ────────────────────────────
+const DEMO_HANDOVERS = [
+  {id:"HO-001",empId:"DP-2023-010",name:"Meera Joshi",dept:"Administration",designation:"Admin Executive",
+   lastDay:"2024-07-31",manager:"Arjun Sharma",status:"submitted",sections:8,completed:8,
+   email:"meera@denebpollux.com",mobile:"9876543217",
+   tasks:[
+     {title:"Client Handover Documentation",status:"done",note:"All client files transferred to Priya Mehta"},
+     {title:"System Access Revocation",status:"done",note:"IT notified, access removed on 28 Jul"},
+     {title:"Asset Return — Laptop, ID Card",status:"done",note:"Returned to admin on 29 Jul"},
+     {title:"Pending Invoices",status:"done",note:"3 invoices cleared, 1 handed to finance"},
+     {title:"Knowledge Transfer Sessions",status:"done",note:"2 sessions conducted with replacement"},
+     {title:"Email Handover",status:"done",note:"Auto-forward set to arjun@denebpollux.com"},
+     {title:"HR Exit Interview",status:"pending",note:"Scheduled for 30 Jul 3pm"},
+     {title:"Full & Final Settlement Docs",status:"pending",note:"Awaiting accounts"},
+   ]},
+  {id:"HO-002",empId:"DP-2024-003",name:"Rahul Gupta",dept:"Sales",designation:"Sales Executive",
+   lastDay:"2024-08-15",manager:"Sneha Patel",status:"draft",sections:8,completed:3,
+   email:"rahul@denebpollux.com",mobile:"9876543212",
+   tasks:[
+     {title:"Pipeline Handover",status:"done",note:""},
+     {title:"Client Introductions",status:"done",note:""},
+     {title:"CRM Update",status:"done",note:""},
+     {title:"Territory Documentation",status:"pending",note:""},
+     {title:"Asset Return",status:"pending",note:""},
+     {title:"Knowledge Transfer",status:"pending",note:""},
+     {title:"Exit Interview",status:"pending",note:""},
+     {title:"F&F Settlement",status:"pending",note:""},
+   ]},
+];
+
+const DEMO_DOCUMENTS = [
+  {id:"D001",empId:"JR-2024-009",employee:"Amit Verma",type:"Aadhaar Card",uploaded:"2024-06-01",status:"pending",size:"1.2 MB",icon:"🪪"},
+  {id:"D002",empId:"JR-2024-009",employee:"Amit Verma",type:"PAN Card",uploaded:"2024-06-01",status:"pending",size:"0.8 MB",icon:"🪪"},
+  {id:"D003",empId:"JR-2024-009",employee:"Amit Verma",type:"10th Certificate",uploaded:"2024-06-02",status:"verified",size:"2.1 MB",icon:"📜"},
+  {id:"D004",empId:"JR-2024-009",employee:"Amit Verma",type:"12th Certificate",uploaded:"2024-06-02",status:"verified",size:"1.9 MB",icon:"📜"},
+  {id:"D005",empId:"JR-2024-009",employee:"Amit Verma",type:"Degree Certificate",uploaded:"2024-06-02",status:"pending",size:"3.1 MB",icon:"🎓"},
+  {id:"D006",empId:"JR-2024-009",employee:"Amit Verma",type:"Experience Letter",uploaded:"2024-06-03",status:"failed",size:"0.5 MB",icon:"📝"},
+  {id:"D007",empId:"JR-003",employee:"Nikhil Jain",type:"Aadhaar Card",uploaded:"2024-06-05",status:"pending",size:"1.1 MB",icon:"🪪"},
+  {id:"D008",empId:"JR-003",employee:"Nikhil Jain",type:"Salary Slip Month 1",uploaded:"2024-06-05",status:"pending",size:"0.3 MB",icon:"💰"},
+  {id:"D009",empId:"JR-006",employee:"Sunita Devi",type:"10th Certificate",uploaded:"2024-06-08",status:"verified",size:"1.7 MB",icon:"📜"},
+  {id:"D010",empId:"JR-002",employee:"Kavya Reddy",type:"Experience Letter",uploaded:"2024-06-03",status:"pending",size:"0.6 MB",icon:"📝"},
+  {id:"D011",empId:"JR-002",employee:"Kavya Reddy",type:"Relieving Letter",uploaded:"2024-06-03",status:"pending",size:"0.4 MB",icon:"📝"},
+  {id:"D012",empId:"DP-2024-007",employee:"Karan Malhotra",type:"Cancelled Cheque",uploaded:"2024-06-10",status:"verified",size:"0.9 MB",icon:"🏦"},
+];
+
+const DEMO_USERS = [
+  {id:"U001",name:"Priya Sharma",email:"priya.s@denebpollux.com",role:"hr",status:"active",lastLogin:"2024-06-08",created:"2024-01-10"},
+  {id:"U002",name:"Amit Kapoor",email:"amit.k@denebpollux.com",role:"admin",status:"active",lastLogin:"2024-06-07",created:"2023-11-01"},
+  {id:"U003",name:"Sunita Rao",email:"sunita.r@denebpollux.com",role:"manager",status:"active",lastLogin:"2024-06-06",created:"2024-02-15"},
+  {id:"U004",name:"Vikas Mehta",email:"vikas.m@denebpollux.com",role:"cfo",status:"active",lastLogin:"2024-06-05",created:"2024-01-20"},
+  {id:"U005",name:"Deepa Singh",email:"deepa.s@denebpollux.com",role:"hr",status:"inactive",lastLogin:"2024-05-20",created:"2024-03-01"},
+];
+
+// ─── HR ADMIN: HANDOVER REQUESTS ─────────────────────────────────
+function HandoverRequests({ toast }) {
+  const [handovers, setHandovers] = useState(DEMO_HANDOVERS);
+  const [view, setView] = useState(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const { confirm, Dialog } = useConfirm();
+
+  const filtered = handovers.filter(h => {
+    const q = search.toLowerCase();
+    const ms = !statusFilter || h.status === statusFilter;
+    const mq = !q || h.name.toLowerCase().includes(q) || h.empId.toLowerCase().includes(q) || h.dept.toLowerCase().includes(q);
+    return ms && mq;
+  });
+
+  const approve = async id => {
+    if (!await confirm(`Approve handover for ${handovers.find(h=>h.id===id)?.name}?`, "Approve Handover")) return;
+    setHandovers(p => p.map(h => h.id===id ? {...h, status:"approved"} : h));
+    setView(null);
+    toast.add("Handover approved", "success");
+  };
+
+  const reject = async id => {
+    if (!await confirm(`Reject handover for ${handovers.find(h=>h.id===id)?.name}?`, "Reject Handover")) return;
+    setHandovers(p => p.map(h => h.id===id ? {...h, status:"rejected"} : h));
+    setView(null);
+    toast.add("Handover rejected", "error");
+  };
+
+  const statusColor = {submitted:T.info, approved:T.success, rejected:T.danger, draft:T.warning};
+  const pctColor = p => p===100 ? T.success : p>=50 ? T.warning : T.danger;
+
+  return (
+    <div>
+      <Dialog/>
+      <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16}}>
+        <div>
+          <h1 style={{fontSize:22, fontWeight:800, color:T.brand}}>Exit Handovers</h1>
+          <p style={{color:T.muted, fontSize:13}}>Review and manage employee exit handover submissions</p>
+        </div>
+        <Btn variant="secondary" size="sm" onClick={()=>toast.add("Export started","success")}>↓ Export</Btn>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20}}>
+        {[["📤",handovers.length,"Total Handovers",T.brand],
+          ["📝",handovers.filter(h=>h.status==="submitted").length,"Submitted",T.info],
+          ["✅",handovers.filter(h=>h.status==="approved").length,"Approved",T.success],
+          ["⏳",handovers.filter(h=>h.status==="draft").length,"In Progress",T.warning],
+        ].map(([icon,val,lbl,color])=>(
+          <StatCard key={lbl} icon={icon} value={val} label={lbl} color={color}/>
+        ))}
+      </div>
+
+      {/* Filter row */}
+      <div style={{display:"flex", gap:8, marginBottom:16, alignItems:"center"}}>
+        <div style={{position:"relative", flex:1, maxWidth:300}}>
+          <span style={{position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", color:T.faint}}>🔍</span>
+          <input placeholder="Search employee or ID…" value={search} onChange={e=>setSearch(e.target.value)}
+            style={{width:"100%", padding:"7px 12px 7px 32px", border:`1.5px solid ${T.border}`,
+              borderRadius:8, fontSize:13, background:T.surface}}/>
+        </div>
+        {["","submitted","approved","draft","rejected"].map(s=>(
+          <button key={s} onClick={()=>setStatusFilter(s)}
+            style={{padding:"6px 14px", borderRadius:99, border:`1.5px solid ${statusFilter===s?T.brand:T.border}`,
+              background:statusFilter===s?T.brand:T.surface,
+              color:statusFilter===s?"#fff":T.muted, fontSize:12, fontWeight:500, cursor:"pointer"}}>
+            {s===""?"All":s.charAt(0).toUpperCase()+s.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      <Card>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%", borderCollapse:"collapse", fontSize:13}}>
+            <thead>
+              <tr style={{background:T.surface2}}>
+                {["Employee","ID","Department","Last Day","Manager","Completion","Status","Actions"].map(h=>(
+                  <th key={h} style={{padding:"11px 16px", textAlign:"left", color:T.muted,
+                    fontWeight:600, fontSize:12, borderBottom:`1px solid ${T.border}`, whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0
+                ? <tr><td colSpan={8} style={{padding:48, textAlign:"center", color:T.faint}}>No handovers found.</td></tr>
+                : filtered.map((h, i) => {
+                    const pct = Math.round((h.tasks.filter(t=>t.status==="done").length / h.tasks.length) * 100);
+                    return (
+                      <tr key={h.id} style={{borderBottom:`1px solid ${T.border}`, background:i%2===0?T.surface:T.surface2}}>
+                        <td style={{padding:"11px 16px"}}>
+                          <div style={{fontWeight:600}}>{h.name}</div>
+                          <div style={{fontSize:11, color:T.faint}}>{h.designation}</div>
+                        </td>
+                        <td style={{padding:"11px 16px"}}><code style={{fontSize:11, color:T.muted, fontFamily:"'JetBrains Mono',monospace"}}>{h.empId}</code></td>
+                        <td style={{padding:"11px 16px", color:T.muted}}>{h.dept}</td>
+                        <td style={{padding:"11px 16px", color:T.muted, fontSize:12}}>{h.lastDay}</td>
+                        <td style={{padding:"11px 16px", color:T.muted, fontSize:12}}>{h.manager}</td>
+                        <td style={{padding:"11px 16px"}}>
+                          <div style={{display:"flex", alignItems:"center", gap:8}}>
+                            <div style={{flex:1, height:6, background:T.bgDark, borderRadius:3}}>
+                              <div style={{width:`${pct}%`, height:"100%", borderRadius:3, background:pctColor(pct)}}/>
+                            </div>
+                            <span style={{fontSize:11, color:T.muted, width:34, textAlign:"right"}}>{pct}%</span>
+                          </div>
+                          <div style={{fontSize:10, color:T.faint, marginTop:2}}>
+                            {h.tasks.filter(t=>t.status==="done").length}/{h.tasks.length} sections
+                          </div>
+                        </td>
+                        <td style={{padding:"11px 16px"}}>
+                          <span style={{background:statusColor[h.status]+"18", color:statusColor[h.status],
+                            border:`1px solid ${statusColor[h.status]}44`, borderRadius:99,
+                            padding:"3px 10px", fontSize:11, fontWeight:700, textTransform:"uppercase"}}>
+                            {h.status}
+                          </span>
+                        </td>
+                        <td style={{padding:"11px 16px"}}>
+                          <div style={{display:"flex", gap:6}}>
+                            <Btn variant="ghost" size="xs" onClick={()=>setView(h)}>Review →</Btn>
+                            {h.status==="submitted" && (
+                              <Btn variant="success" size="xs" onClick={()=>approve(h.id)}>Approve</Btn>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+              }
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Review Modal */}
+      <Modal open={!!view} onClose={()=>setView(null)} title={`Handover Review — ${view?.name}`} size="xl"
+        footer={<>
+          <Btn variant="secondary" onClick={()=>setView(null)}>Close</Btn>
+          {view?.status==="submitted" && <>
+            <Btn variant="danger" onClick={()=>reject(view.id)}>Reject</Btn>
+            <Btn variant="success" onClick={()=>approve(view.id)}>✓ Approve Handover</Btn>
+          </>}
+        </>}>
+        {view && (
+          <div>
+            {/* Employee info strip */}
+            <div style={{display:"flex", gap:16, padding:16, background:T.surface2,
+              borderRadius:12, border:`1px solid ${T.border}`, marginBottom:20}}>
+              <div style={{width:48, height:48, borderRadius:"50%", background:T.brand,
+                display:"flex", alignItems:"center", justifyContent:"center",
+                color:"#fff", fontSize:16, fontWeight:700, flexShrink:0}}>
+                {view.name.split(" ").map(w=>w[0]).join("").slice(0,2)}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700, fontSize:15, color:T.brand}}>{view.name}</div>
+                <div style={{color:T.muted, fontSize:13}}>{view.designation} · {view.dept}</div>
+                <div style={{display:"flex", gap:16, marginTop:8, flexWrap:"wrap"}}>
+                  {[["Last Day", view.lastDay],["Reporting to", view.manager],["Email", view.email]].map(([l,v])=>(
+                    <span key={l} style={{fontSize:12, color:T.faint}}><strong style={{color:T.muted}}>{l}:</strong> {v}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span style={{background:statusColor[view.status]+"18", color:statusColor[view.status],
+                  border:`1px solid ${statusColor[view.status]}44`, borderRadius:99,
+                  padding:"4px 12px", fontSize:12, fontWeight:700, textTransform:"uppercase"}}>
+                  {view.status}
+                </span>
+              </div>
+            </div>
+
+            {/* Workflow status */}
+            <div style={{display:"flex", alignItems:"center", gap:0, marginBottom:20,
+              background:T.surface2, border:`1px solid ${T.border}`, borderRadius:10, padding:"14px 20px"}}>
+              <div style={{fontSize:12, fontWeight:700, color:T.muted, marginRight:16, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+                Approval Flow
+              </div>
+              {[["Draft","📝"],["Submitted","📤"],["Manager Approved","👔"],["HR Approved","✅"],["F&F Cleared","💰"]].map(([lbl,icon],i,arr)=>(
+                <div key={lbl} style={{display:"flex", alignItems:"center"}}>
+                  <div style={{display:"flex", alignItems:"center", gap:6}}>
+                    <div style={{width:28, height:28, borderRadius:"50%",
+                      background:view.status==="approved"&&i<=3?T.success:view.status==="submitted"&&i<=1?T.info:i===0?T.muted:T.bgDark,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:12, color:view.status==="approved"&&i<=3?"#fff":view.status==="submitted"&&i<=1?"#fff":"rgba(0,0,0,0.3)"}}>
+                      {icon}
+                    </div>
+                    <span style={{fontSize:11, color:T.muted, fontWeight:500}}>{lbl}</span>
+                  </div>
+                  {i<arr.length-1 && <div style={{width:24, height:2, background:T.border, margin:"0 8px"}}/>}
+                </div>
+              ))}
+            </div>
+
+            {/* Handover checklist */}
+            <div style={{fontWeight:700, color:T.brand, fontSize:14, marginBottom:12}}>
+              Handover Sections ({view.tasks.filter(t=>t.status==="done").length}/{view.tasks.length} complete)
+            </div>
+            <div style={{display:"flex", flexDirection:"column", gap:8}}>
+              {view.tasks.map((task, i) => (
+                <div key={i} style={{display:"flex", alignItems:"flex-start", gap:12, padding:"12px 16px",
+                  background:task.status==="done"?T.successLight:T.surface2,
+                  border:`1px solid ${task.status==="done"?T.successBorder:T.border}`,
+                  borderRadius:10}}>
+                  <div style={{width:24, height:24, borderRadius:"50%", flexShrink:0,
+                    background:task.status==="done"?T.success:T.bgDark,
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    color:task.status==="done"?"#fff":T.faint, fontSize:11, fontWeight:700}}>
+                    {task.status==="done" ? "✓" : i+1}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:600, fontSize:13, color:task.status==="done"?T.success:T.text}}>{task.title}</div>
+                    {task.note && <div style={{fontSize:12, color:T.muted, marginTop:3}}>{task.note}</div>}
+                  </div>
+                  <span style={{fontSize:11, fontWeight:600, color:task.status==="done"?T.success:T.warning,
+                    textTransform:"uppercase", letterSpacing:"0.05em"}}>
+                    {task.status==="done" ? "Done" : "Pending"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
+
+// ─── HR ADMIN: DOCUMENT REVIEW ────────────────────────────────────
+function DocumentReview({ toast }) {
+  const [docs, setDocs] = useState(DEMO_DOCUMENTS);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [viewDoc, setViewDoc] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const { confirm, Dialog } = useConfirm();
+
+  const docTypes = [...new Set(docs.map(d=>d.type))];
+
+  const filtered = docs.filter(d => {
+    const q = search.toLowerCase();
+    const ms = !statusFilter || d.status === statusFilter;
+    const mt = !typeFilter || d.type === typeFilter;
+    const mq = !q || d.employee.toLowerCase().includes(q) || d.empId.toLowerCase().includes(q) || d.type.toLowerCase().includes(q);
+    return ms && mt && mq;
+  });
+
+  const verify = async id => {
+    if (!await confirm(`Verify this document?`, "Verify Document")) return;
+    setDocs(p => p.map(d => d.id===id ? {...d, status:"verified"} : d));
+    setViewDoc(null);
+    toast.add("Document verified", "success");
+  };
+
+  const rejectDoc = () => {
+    if (!rejectReason.trim()) { toast.add("Enter a rejection reason","warning"); return; }
+    setDocs(p => p.map(d => d.id===rejectTarget ? {...d, status:"failed"} : d));
+    setRejectTarget(null);
+    setRejectReason("");
+    setViewDoc(null);
+    toast.add("Document rejected", "error");
+  };
+
+  const statusMap = {
+    pending:  [T.warningLight, T.warning, "Pending"],
+    verified: [T.successLight, T.success, "Verified"],
+    failed:   [T.dangerLight,  T.danger,  "Failed"],
+  };
+
+  return (
+    <div>
+      <Dialog/>
+      <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16}}>
+        <div>
+          <h1 style={{fontSize:22, fontWeight:800, color:T.brand}}>Document Review</h1>
+          <p style={{color:T.muted, fontSize:13}}>Verify and manage uploaded employee documents</p>
+        </div>
+        <Btn variant="secondary" size="sm" onClick={()=>toast.add("Export started","success")}>↓ Export</Btn>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20}}>
+        {[["📄",docs.length,"Total Docs",T.brand],
+          ["⏳",docs.filter(d=>d.status==="pending").length,"Pending Review",T.warning],
+          ["✅",docs.filter(d=>d.status==="verified").length,"Verified",T.success],
+          ["✕",docs.filter(d=>d.status==="failed").length,"Rejected",T.danger],
+        ].map(([icon,val,lbl,color])=>(
+          <StatCard key={lbl} icon={icon} value={val} label={lbl} color={color}/>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div style={{display:"flex", gap:10, marginBottom:16, flexWrap:"wrap", alignItems:"center"}}>
+        <div style={{position:"relative", maxWidth:260}}>
+          <span style={{position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", color:T.faint, fontSize:13}}>🔍</span>
+          <input placeholder="Search employee, type…" value={search} onChange={e=>setSearch(e.target.value)}
+            style={{padding:"7px 12px 7px 32px", border:`1.5px solid ${T.border}`, borderRadius:8, fontSize:13, background:T.surface, width:"100%"}}/>
+        </div>
+        <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}
+          style={{border:`1.5px solid ${T.border}`, borderRadius:8, padding:"7px 12px", fontSize:13, background:T.surface}}>
+          <option value="">All Status</option>
+          {["pending","verified","failed"].map(s=><option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
+        </select>
+        <select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}
+          style={{border:`1.5px solid ${T.border}`, borderRadius:8, padding:"7px 12px", fontSize:13, background:T.surface, maxWidth:200}}>
+          <option value="">All Types</option>
+          {docTypes.map(t=><option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+
+      <Card>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%", borderCollapse:"collapse", fontSize:13}}>
+            <thead>
+              <tr style={{background:T.surface2}}>
+                {["Document","Employee","Employee ID","Uploaded","Size","Status","Actions"].map(h=>(
+                  <th key={h} style={{padding:"11px 16px", textAlign:"left", color:T.muted,
+                    fontWeight:600, fontSize:12, borderBottom:`1px solid ${T.border}`, whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length===0
+                ? <tr><td colSpan={7} style={{padding:48, textAlign:"center", color:T.faint}}>No documents found.</td></tr>
+                : filtered.map((d,i)=>{
+                    const [bg, fg, lbl] = statusMap[d.status]||[T.bgDark,T.muted,"—"];
+                    return (
+                      <tr key={d.id} style={{borderBottom:`1px solid ${T.border}`, background:i%2===0?T.surface:T.surface2}}>
+                        <td style={{padding:"11px 16px"}}>
+                          <div style={{display:"flex", alignItems:"center", gap:10}}>
+                            <span style={{fontSize:18}}>{d.icon}</span>
+                            <span style={{fontWeight:600}}>{d.type}</span>
+                          </div>
+                        </td>
+                        <td style={{padding:"11px 16px"}}>{d.employee}</td>
+                        <td style={{padding:"11px 16px"}}>
+                          <code style={{fontSize:11, color:T.muted, fontFamily:"'JetBrains Mono',monospace"}}>{d.empId}</code>
+                        </td>
+                        <td style={{padding:"11px 16px", color:T.muted, fontSize:12}}>{d.uploaded}</td>
+                        <td style={{padding:"11px 16px", color:T.faint, fontSize:12}}>{d.size}</td>
+                        <td style={{padding:"11px 16px"}}>
+                          <span style={{background:bg, color:fg, border:`1px solid ${fg}44`,
+                            borderRadius:99, padding:"3px 10px", fontSize:11, fontWeight:700}}>
+                            {lbl}
+                          </span>
+                        </td>
+                        <td style={{padding:"11px 16px"}}>
+                          <div style={{display:"flex", gap:6}}>
+                            <Btn variant="ghost" size="xs" onClick={()=>setViewDoc(d)}>👁 View</Btn>
+                            {d.status==="pending" && <>
+                              <Btn variant="success" size="xs" onClick={()=>verify(d.id)}>✓ Verify</Btn>
+                              <Btn variant="danger" size="xs" onClick={()=>{setRejectTarget(d.id);setViewDoc(d);}}>✕</Btn>
+                            </>}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+              }
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Document detail modal */}
+      <Modal open={!!viewDoc} onClose={()=>{setViewDoc(null);setRejectTarget(null);setRejectReason("");}}
+        title={viewDoc?.type||""} size="md"
+        footer={<>
+          <Btn variant="secondary" onClick={()=>{setViewDoc(null);setRejectTarget(null);setRejectReason("");}}>Close</Btn>
+          {viewDoc?.status==="pending" && !rejectTarget && (
+            <>
+              <Btn variant="danger" onClick={()=>setRejectTarget(viewDoc.id)}>✕ Reject</Btn>
+              <Btn variant="success" onClick={()=>verify(viewDoc?.id)}>✓ Verify</Btn>
+            </>
+          )}
+          {rejectTarget && <Btn variant="danger" onClick={rejectDoc}>Confirm Rejection</Btn>}
+        </>}>
+        {viewDoc && (
+          <div>
+            <div style={{background:T.surface2, border:`1px solid ${T.border}`, borderRadius:12,
+              padding:16, marginBottom:20, display:"flex", alignItems:"center", gap:14}}>
+              <span style={{fontSize:36}}>{viewDoc.icon}</span>
+              <div>
+                <div style={{fontWeight:700, fontSize:15}}>{viewDoc.type}</div>
+                <div style={{color:T.muted, fontSize:13}}>{viewDoc.employee} · {viewDoc.empId}</div>
+                <div style={{marginTop:6}}>
+                  {(()=>{const [bg,fg,lbl]=statusMap[viewDoc.status]||[T.bgDark,T.muted,"—"];
+                    return <span style={{background:bg,color:fg,border:`1px solid ${fg}44`,borderRadius:99,padding:"3px 10px",fontSize:11,fontWeight:700}}>{lbl}</span>;
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {[["Uploaded On",viewDoc.uploaded],["File Size",viewDoc.size],["Employee",viewDoc.employee],["Employee ID",viewDoc.empId]].map(([l,v])=>(
+              <div key={l} style={{display:"flex", padding:"9px 0", borderBottom:`1px solid ${T.border}`, fontSize:13}}>
+                <span style={{width:"40%", color:T.muted, fontWeight:500}}>{l}</span>
+                <span>{v}</span>
+              </div>
+            ))}
+
+            {/* Simulated document preview */}
+            <div style={{marginTop:20, background:T.bg, border:`2px dashed ${T.border}`,
+              borderRadius:12, padding:32, textAlign:"center", color:T.faint}}>
+              <div style={{fontSize:48, marginBottom:8}}>{viewDoc.icon}</div>
+              <div style={{fontSize:14, fontWeight:600, color:T.muted, marginBottom:4}}>{viewDoc.type}</div>
+              <div style={{fontSize:12, marginBottom:16}}>PDF/Image preview would render here</div>
+              <Btn variant="secondary" size="sm" onClick={()=>toast.add("Download started","success")}>↓ Download File</Btn>
+            </div>
+
+            {rejectTarget && (
+              <div style={{marginTop:16}}>
+                <Textarea label="Rejection Reason" required rows={3} value={rejectReason}
+                  onChange={e=>setRejectReason(e.target.value)}
+                  placeholder="Explain why this document is being rejected…"/>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
+
+// ─── HR ADMIN: USER MANAGEMENT ────────────────────────────────────
+function UserManagement({ toast }) {
+  const [users, setUsers] = useState(DEMO_USERS);
+  const [showAdd, setShowAdd] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+  const [search, setSearch] = useState("");
+  const { confirm, Dialog } = useConfirm();
+  const [form, setForm] = useState({name:"", email:"", role:"hr", status:"active"});
+
+  const roleMap = {
+    admin:   [T.dangerLight, T.danger, "Administrator"],
+    hr:      [T.infoLight, T.info, "HR Manager"],
+    manager: [T.warningLight, T.warning, "Manager"],
+    cfo:     [T.accentXlight, T.accent, "CFO"],
+  };
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase();
+    return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.includes(q);
+  });
+
+  const saveUser = () => {
+    if (!form.name || !form.email) { toast.add("Fill all required fields","warning"); return; }
+    if (editUser) {
+      setUsers(p => p.map(u => u.id===editUser.id ? {...u, ...form} : u));
+      toast.add("User updated","success");
+    } else {
+      setUsers(p => [...p, {...form, id:"U"+(p.length+1).toString().padStart(3,"0"), lastLogin:"—", created:new Date().toISOString().slice(0,10)}]);
+      toast.add("User added","success");
+    }
+    setShowAdd(false); setEditUser(null); setForm({name:"",email:"",role:"hr",status:"active"});
+  };
+
+  const toggleStatus = async u => {
+    const newStatus = u.status==="active"?"inactive":"active";
+    if (!await confirm(`${newStatus==="active"?"Activate":"Deactivate"} ${u.name}?`)) return;
+    setUsers(p => p.map(x => x.id===u.id ? {...x, status:newStatus} : x));
+    toast.add(`User ${newStatus==="active"?"activated":"deactivated"}`,"success");
+  };
+
+  const deleteUser = async u => {
+    if (!await confirm(`Delete ${u.name}? This cannot be undone.`, "Delete User")) return;
+    setUsers(p => p.filter(x => x.id!==u.id));
+    toast.add("User deleted","info");
+  };
+
+  const openEdit = u => { setEditUser(u); setForm({name:u.name,email:u.email,role:u.role,status:u.status}); setShowAdd(true); };
+
+  return (
+    <div>
+      <Dialog/>
+      <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16}}>
+        <div>
+          <h1 style={{fontSize:22, fontWeight:800, color:T.brand}}>User Management</h1>
+          <p style={{color:T.muted, fontSize:13}}>Manage HR portal access — roles, permissions and user accounts</p>
+        </div>
+        <Btn variant="primary" size="sm" onClick={()=>{setEditUser(null);setForm({name:"",email:"",role:"hr",status:"active"});setShowAdd(true);}}>
+          + Add User
+        </Btn>
+      </div>
+
+      {/* Role stat cards */}
+      <div style={{display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:12, marginBottom:20}}>
+        {[["👥",users.length,"Total Users",T.brand],
+          ["🔴",users.filter(u=>u.role==="admin").length,"Admins",T.danger],
+          ["🟦",users.filter(u=>u.role==="hr").length,"HR Managers",T.info],
+          ["🟡",users.filter(u=>u.role==="manager").length,"Managers",T.warning],
+          ["✅",users.filter(u=>u.status==="active").length,"Active",T.success],
+        ].map(([icon,val,lbl,color])=>(
+          <StatCard key={lbl} icon={icon} value={val} label={lbl} color={color}/>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div style={{marginBottom:16}}>
+        <div style={{position:"relative", maxWidth:300}}>
+          <span style={{position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", color:T.faint, fontSize:13}}>🔍</span>
+          <input placeholder="Search name, email, role…" value={search} onChange={e=>setSearch(e.target.value)}
+            style={{width:"100%", padding:"7px 12px 7px 32px", border:`1.5px solid ${T.border}`,
+              borderRadius:8, fontSize:13, background:T.surface}}/>
+        </div>
+      </div>
+
+      <Card>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%", borderCollapse:"collapse", fontSize:13}}>
+            <thead>
+              <tr style={{background:T.surface2}}>
+                {["User","Email","Role","Last Login","Created","Status","Actions"].map(h=>(
+                  <th key={h} style={{padding:"11px 16px", textAlign:"left", color:T.muted,
+                    fontWeight:600, fontSize:12, borderBottom:`1px solid ${T.border}`, whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u, i) => {
+                const [bg, fg, lbl] = roleMap[u.role] || [T.bgDark, T.muted, u.role];
+                return (
+                  <tr key={u.id} style={{borderBottom:`1px solid ${T.border}`, background:i%2===0?T.surface:T.surface2}}>
+                    <td style={{padding:"11px 16px"}}>
+                      <div style={{display:"flex", alignItems:"center", gap:10}}>
+                        <div style={{width:32, height:32, borderRadius:"50%", background:fg,
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          color:"#fff", fontSize:11, fontWeight:700, flexShrink:0}}>
+                          {u.name.split(" ").map(w=>w[0]).join("").slice(0,2)}
+                        </div>
+                        <span style={{fontWeight:600}}>{u.name}</span>
+                      </div>
+                    </td>
+                    <td style={{padding:"11px 16px", color:T.muted, fontSize:12}}>{u.email}</td>
+                    <td style={{padding:"11px 16px"}}>
+                      <span style={{background:bg, color:fg, border:`1px solid ${fg}33`,
+                        borderRadius:99, padding:"3px 10px", fontSize:11, fontWeight:700}}>
+                        {lbl}
+                      </span>
+                    </td>
+                    <td style={{padding:"11px 16px", color:T.faint, fontSize:12}}>{u.lastLogin}</td>
+                    <td style={{padding:"11px 16px", color:T.faint, fontSize:12}}>{u.created}</td>
+                    <td style={{padding:"11px 16px"}}>
+                      <span style={{background:u.status==="active"?T.successLight:T.bgDark,
+                        color:u.status==="active"?T.success:T.muted, borderRadius:99,
+                        padding:"3px 10px", fontSize:11, fontWeight:700}}>
+                        {u.status==="active"?"Active":"Inactive"}
+                      </span>
+                    </td>
+                    <td style={{padding:"11px 16px"}}>
+                      <div style={{display:"flex", gap:6}}>
+                        <Btn variant="ghost" size="xs" onClick={()=>openEdit(u)}>✏️ Edit</Btn>
+                        <Btn variant="ghost" size="xs" onClick={()=>toggleStatus(u)}
+                          style={{color:u.status==="active"?T.warning:T.success}}>
+                          {u.status==="active"?"Deactivate":"Activate"}
+                        </Btn>
+                        <Btn variant="ghost" size="xs" onClick={()=>deleteUser(u)}
+                          style={{color:T.danger}}>🗑</Btn>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Add/Edit User Modal */}
+      <Modal open={showAdd} onClose={()=>{setShowAdd(false);setEditUser(null);}} size="sm"
+        title={editUser?"Edit User":"Add New User"}
+        footer={<>
+          <Btn variant="secondary" onClick={()=>{setShowAdd(false);setEditUser(null);}}>Cancel</Btn>
+          <Btn variant="primary" onClick={saveUser}>{editUser?"Save Changes":"Add User"}</Btn>
+        </>}>
+        <div style={{display:"flex", flexDirection:"column", gap:14}}>
+          <Input label="Full Name" required value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="User full name"/>
+          <Input label="Email Address" required type="email" value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="user@denebpollux.com"/>
+          <Select label="Role" required value={form.role} onChange={e=>setForm(p=>({...p,role:e.target.value}))}
+            options={[{value:"admin",label:"Administrator"},{value:"hr",label:"HR Manager"},{value:"manager",label:"Manager"},{value:"cfo",label:"CFO"}]}/>
+          <Select label="Status" value={form.status} onChange={e=>setForm(p=>({...p,status:e.target.value}))}
+            options={[{value:"active",label:"Active"},{value:"inactive",label:"Inactive"}]}/>
+          {!editUser && (
+            <div style={{background:T.infoLight, border:`1px solid ${T.infoBorder}`, borderRadius:8,
+              padding:"10px 14px", fontSize:12, color:T.info}}>
+              ℹ️ A welcome email with login credentials will be sent automatically.
+            </div>
+          )}
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+// ─── HR ADMIN: SETTINGS ───────────────────────────────────────────
+function Settings({ toast }) {
+  const [saved, setSaved] = useState({});
+  const [orgName, setOrgName] = useState("Deneb & Pollux Tours and Travels Pvt Ltd");
+  const [orgEmail, setOrgEmail] = useState("hr@denebpollux.com");
+  const [orgPhone, setOrgPhone] = useState("+91 11 4567 8900");
+  const [orgAddress, setOrgAddress] = useState("123, Connaught Place, New Delhi — 110001");
+  const [offerExpiry, setOfferExpiry] = useState("7");
+  const [autoReminder, setAutoReminder] = useState(true);
+  const [reminderDays, setReminderDays] = useState("3");
+  const [probation, setProbation] = useState("6");
+  const [bvgEnabled, setBvgEnabled] = useState(true);
+  const [minCerts, setMinCerts] = useState("5");
+  const [smtpHost, setSmtpHost] = useState("smtp.denebpollux.com");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("noreply@denebpollux.com");
+  const [notifJoining, setNotifJoining] = useState(true);
+  const [notifApproval, setNotifApproval] = useState(true);
+  const [notifHandover, setNotifHandover] = useState(false);
+
+  const save = section => {
+    setSaved(p=>({...p,[section]:true}));
+    toast.add(`${section} settings saved`, "success");
+    setTimeout(()=>setSaved(p=>({...p,[section]:false})),2000);
+  };
+
+  const Toggle = ({checked, onChange, label}) => (
+    <label style={{display:"flex", alignItems:"center", gap:12, cursor:"pointer"}}>
+      <div onClick={()=>onChange(!checked)}
+        style={{width:44, height:24, borderRadius:12,
+          background:checked?T.success:T.bgDark, position:"relative", transition:"background 0.2s", cursor:"pointer"}}>
+        <div style={{width:18, height:18, borderRadius:"50%", background:"#fff",
+          position:"absolute", top:3, left:checked?23:3, transition:"left 0.2s",
+          boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}/>
+      </div>
+      <span style={{fontSize:13, color:T.text}}>{label}</span>
+    </label>
+  );
+
+  const sections = [
+    {
+      id:"org", icon:"🏢", title:"Organisation Details",
+      content:(
+        <div style={{display:"flex", flexDirection:"column", gap:14}}>
+          <FormGrid cols={2}>
+            <Input label="Organisation Name" value={orgName} onChange={e=>setOrgName(e.target.value)} style={{gridColumn:"span 2"}}/>
+            <Input label="HR Email" type="email" value={orgEmail} onChange={e=>setOrgEmail(e.target.value)}/>
+            <Input label="Phone" value={orgPhone} onChange={e=>setOrgPhone(e.target.value)}/>
+            <Input label="Address" value={orgAddress} onChange={e=>setOrgAddress(e.target.value)} style={{gridColumn:"span 2"}}/>
+          </FormGrid>
+        </div>
+      )
+    },
+    {
+      id:"joining", icon:"📋", title:"Joining & Onboarding",
+      content:(
+        <div style={{display:"flex", flexDirection:"column", gap:14}}>
+          <FormGrid cols={3}>
+            <Input label="Offer Letter Validity (days)" type="number" value={offerExpiry} onChange={e=>setOfferExpiry(e.target.value)}/>
+            <Input label="Probation Period (months)" type="number" value={probation} onChange={e=>setProbation(e.target.value)}/>
+            <Input label="Minimum Certifications Required" type="number" value={minCerts} onChange={e=>setMinCerts(e.target.value)}/>
+          </FormGrid>
+          <div style={{display:"flex", flexDirection:"column", gap:12}}>
+            <Toggle checked={autoReminder} onChange={setAutoReminder} label="Send automatic reminders to employees who haven't accepted offer"/>
+            {autoReminder && (
+              <Input label="Reminder before expiry (days)" type="number" value={reminderDays}
+                onChange={e=>setReminderDays(e.target.value)} style={{maxWidth:200}}/>
+            )}
+            <Toggle checked={bvgEnabled} onChange={setBvgEnabled} label="Require background verification consent in joining form"/>
+          </div>
+        </div>
+      )
+    },
+    {
+      id:"email", icon:"📧", title:"Email / SMTP Configuration",
+      content:(
+        <div style={{display:"flex", flexDirection:"column", gap:14}}>
+          <FormGrid cols={2}>
+            <Input label="SMTP Host" value={smtpHost} onChange={e=>setSmtpHost(e.target.value)}/>
+            <Input label="SMTP Port" type="number" value={smtpPort} onChange={e=>setSmtpPort(e.target.value)}/>
+            <Input label="SMTP Username / From Email" value={smtpUser} onChange={e=>setSmtpUser(e.target.value)}/>
+            <Input label="SMTP Password" type="password" value="••••••••••" onChange={()=>{}}/>
+          </FormGrid>
+          <Btn variant="secondary" size="sm" style={{alignSelf:"flex-start"}}
+            onClick={()=>toast.add("Test email sent to "+orgEmail,"success")}>
+            🧪 Send Test Email
+          </Btn>
+        </div>
+      )
+    },
+    {
+      id:"notif", icon:"🔔", title:"Notification Preferences",
+      content:(
+        <div style={{display:"flex", flexDirection:"column", gap:14}}>
+          <Toggle checked={notifJoining} onChange={setNotifJoining} label="Notify HR when new joining application is submitted"/>
+          <Toggle checked={notifApproval} onChange={setNotifApproval} label="Notify HR when document is uploaded and awaiting review"/>
+          <Toggle checked={notifHandover} onChange={setNotifHandover} label="Notify manager when exit handover is submitted"/>
+        </div>
+      )
+    },
+  ];
+
+  return (
+    <div style={{maxWidth:800}}>
+      <div style={{marginBottom:24}}>
+        <h1 style={{fontSize:22, fontWeight:800, color:T.brand}}>Settings</h1>
+        <p style={{color:T.muted, fontSize:13}}>Configure the HR portal, onboarding rules, email and notifications</p>
+      </div>
+
+      <div style={{display:"flex", flexDirection:"column", gap:16}}>
+        {sections.map(s=>(
+          <div key={s.id} style={{background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, overflow:"hidden"}}>
+            <div style={{background:T.surface2, padding:"14px 20px", borderBottom:`1px solid ${T.border}`,
+              display:"flex", alignItems:"center", gap:10}}>
+              <div style={{width:34, height:34, borderRadius:8, background:T.accentXlight,
+                display:"flex", alignItems:"center", justifyContent:"center", fontSize:16}}>{s.icon}</div>
+              <span style={{fontWeight:700, color:T.brand, fontSize:14}}>{s.title}</span>
+            </div>
+            <div style={{padding:20}}>
+              {s.content}
+              <div style={{marginTop:16, paddingTop:16, borderTop:`1px solid ${T.border}`, display:"flex", justifyContent:"flex-end"}}>
+                <Btn variant="primary" size="sm" onClick={()=>save(s.title)}>
+                  {saved[s.title] ? "✓ Saved" : "Save Changes"}
+                </Btn>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── HR ADMIN PORTAL ──────────────────────────────────────────────
 function AdminPortal({ onSwitch }) {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -1314,6 +2093,8 @@ function AdminPortal({ onSwitch }) {
   const [collapsed, setCollapsed] = useState(false);
   const [employees, setEmployees] = useState(DEMO_EMPLOYEES);
   const [approvals, setApprovals] = useState(DEMO_APPROVALS);
+  const [topbarSearch, setTopbarSearch] = useState("");
+  const [showNotifs, setShowNotifs] = useState(false);
   const toast = useToast();
 
   if (!loggedIn) return <>
@@ -1335,16 +2116,15 @@ function AdminPortal({ onSwitch }) {
       case "joining-requests": return <JoiningRequests employees={employees} setEmployees={setEmployees} toast={toast}/>;
       case "approvals": return <Approvals approvals={approvals} setApprovals={setApprovals} toast={toast}/>;
       case "reports": return <Reports toast={toast}/>;
-      case "handover-requests":
-      case "documents":
-      case "users":
-      case "settings":
+      case "handover-requests": return <HandoverRequests toast={toast}/>;
+      case "documents": return <DocumentReview toast={toast}/>;
+      case "users": return <UserManagement toast={toast}/>;
+      case "settings": return <Settings toast={toast}/>;
       default:
         return (
           <div style={{textAlign:"center", padding:64, color:T.faint}}>
-            <div style={{fontSize:48, marginBottom:12}}>🚧</div>
-            <div style={{fontSize:18, fontWeight:700, color:T.muted, marginBottom:8}}>{pageTitle}</div>
-            <div style={{fontSize:14}}>This module is fully built in the backend. Frontend integration<br/>is part of Phase 3 of the migration plan.</div>
+            <div style={{fontSize:48, marginBottom:12}}>🏠</div>
+            <div style={{fontSize:18, fontWeight:700, color:T.muted}}>Page not found</div>
           </div>
         );
     }
@@ -1356,11 +2136,74 @@ function AdminPortal({ onSwitch }) {
         onToggle={()=>setCollapsed(c=>!c)} onLogout={()=>setLoggedIn(false)}/>
       <div style={{flex:1, display:"flex", flexDirection:"column", minWidth:0}}>
         <Topbar title={pageTitle} onToggle={()=>setCollapsed(c=>!c)}
-          onSearch={["employees","joining-requests"].includes(page)?()=>{}:undefined}
+          onSearch={["employees","joining-requests","documents","handover-requests"].includes(page)?setTopbarSearch:undefined}
+          searchVal={topbarSearch}
           rightContent={
             <div style={{display:"flex", alignItems:"center", gap:12}}>
-              <button style={{background:"none", border:"none", cursor:"pointer",
-                fontSize:18, color:T.muted}}>🔔</button>
+              {/* Notification bell */}
+              <div style={{position:"relative"}}>
+                <button
+                  onClick={()=>setShowNotifs(p=>!p)}
+                  style={{background:"none", border:"none", cursor:"pointer",
+                    fontSize:18, color:T.muted, position:"relative", lineHeight:1,
+                    padding:4}}>
+                  🔔
+                  {approvals.length > 0 && (
+                    <span style={{position:"absolute", top:-2, right:-2, width:16, height:16,
+                      borderRadius:"50%", background:T.danger, color:"#fff",
+                      fontSize:9, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center"}}>
+                      {approvals.length}
+                    </span>
+                  )}
+                </button>
+                {showNotifs && (
+                  <div style={{position:"absolute", right:0, top:"calc(100% + 8px)", width:340,
+                    background:T.surface, border:`1px solid ${T.border}`, borderRadius:14,
+                    boxShadow:"0 12px 40px rgba(0,0,0,0.14)", zIndex:200}}>
+                    <div style={{padding:"14px 18px", borderBottom:`1px solid ${T.border}`,
+                      display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+                      <span style={{fontWeight:700, color:T.brand, fontSize:14}}>Notifications</span>
+                      <span style={{fontSize:11, color:T.faint}}>{approvals.length} pending</span>
+                    </div>
+                    <div style={{maxHeight:320, overflowY:"auto"}}>
+                      {approvals.slice(0,8).map(a=>(
+                        <div key={a.id} style={{padding:"12px 18px", borderBottom:`1px solid ${T.border}`,
+                          display:"flex", gap:12, cursor:"pointer",
+                          background:T.surface}}
+                          onMouseEnter={e=>e.currentTarget.style.background=T.surface2}
+                          onMouseLeave={e=>e.currentTarget.style.background=T.surface}
+                          onClick={()=>{setPage("approvals");setShowNotifs(false);}}>
+                          <span style={{fontSize:20, flexShrink:0}}>{a.icon}</span>
+                          <div style={{flex:1, minWidth:0}}>
+                            <div style={{fontWeight:600, fontSize:12, color:T.text}}>{a.employee}</div>
+                            <div style={{fontSize:11, color:T.muted, marginTop:2, overflow:"hidden",
+                              textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{a.description}</div>
+                            <div style={{fontSize:10, color:T.faint, marginTop:2}}>{a.submitted}</div>
+                          </div>
+                          <span style={{fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:4,
+                            background:a.priority==="high"?T.dangerLight:a.priority==="medium"?T.warningLight:T.successLight,
+                            color:a.priority==="high"?T.danger:a.priority==="medium"?T.warning:T.success,
+                            alignSelf:"flex-start", flexShrink:0}}>
+                            {a.priority}
+                          </span>
+                        </div>
+                      ))}
+                      {approvals.length===0 && (
+                        <div style={{padding:24, textAlign:"center", color:T.faint, fontSize:13}}>
+                          🎉 All caught up!
+                        </div>
+                      )}
+                    </div>
+                    <div style={{padding:"10px 18px", borderTop:`1px solid ${T.border}`}}>
+                      <button onClick={()=>{setPage("approvals");setShowNotifs(false);}}
+                        style={{background:"none", border:"none", cursor:"pointer",
+                          fontSize:12, color:T.accent, fontWeight:600}}>
+                        View all approvals →
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div style={{display:"flex", alignItems:"center", gap:8}}>
                 <div style={{width:30, height:30, borderRadius:"50%", background:T.accent,
                   display:"flex", alignItems:"center", justifyContent:"center",
@@ -1375,7 +2218,9 @@ function AdminPortal({ onSwitch }) {
               <Btn variant="accent" size="sm" onClick={onSwitch}>→ Employee Portal</Btn>
             </div>
           }/>
-        <div style={{flex:1, padding:28, overflowY:"auto"}}>{renderPage()}</div>
+        <div style={{flex:1, padding:28, overflowY:"auto"}} onClick={()=>showNotifs&&setShowNotifs(false)}>
+          {renderPage()}
+        </div>
       </div>
       <Toast toasts={toast.toasts} remove={toast.remove}/>
     </div>
