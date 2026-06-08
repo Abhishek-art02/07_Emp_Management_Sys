@@ -2547,8 +2547,7 @@ function OnboardingWizard({ employee, onSubmit, toast }) {
   const [bvgConsent, setBvgConsent] = useState(false);
 
   // Step 7
-  const [photoPng, setPhotoPng] = useState(null);
-  const [photoJpeg, setPhotoJpeg] = useState(null);
+  const [passportPhoto, setPassportPhoto] = useState(null);
 
   // Step 8
   const [declaration, setDeclaration] = useState(false);
@@ -2596,7 +2595,7 @@ function OnboardingWizard({ employee, onSubmit, toast }) {
       if (!bvgConsent) { toast.add("You must agree to the background verification consent","warning"); return false; }
     }
     if (step===7) {
-      if (!photoPng||!photoJpeg) { toast.add("Upload passport photo in both PNG and JPEG formats","warning"); return false; }
+      if (!passportPhoto) { toast.add("Upload passport size photo","warning"); return false; }
     }
     return true;
   };
@@ -2613,7 +2612,7 @@ function OnboardingWizard({ employee, onSubmit, toast }) {
     onSubmit();
   };
 
-  const reqUploads = [aadhaarXml,aadhaarPdf,idAadhaar,panCard,addressProof,cert10th,cert12th,certDegree,certMarksheets,expLetter,relieving,slip1,slip2,slip3,cheque,photoPng,photoJpeg];
+  const reqUploads = [aadhaarXml,aadhaarPdf,idAadhaar,panCard,addressProof,cert10th,cert12th,certDegree,certMarksheets,expLetter,relieving,slip1,slip2,slip3,cheque,passportPhoto];
   const uploadedCount = reqUploads.filter(Boolean).length;
   const completionPct = Math.round((uploadedCount/reqUploads.length)*100);
   const ringOffset = 251.2 - (251.2 * completionPct / 100);
@@ -2908,7 +2907,7 @@ function OnboardingWizard({ employee, onSubmit, toast }) {
                     <Select label="Address Proof Type" required value={addressProofType}
                       onChange={e=>setAddressProofType(e.target.value)}
                       options={[{value:"",label:"Select document type"},
-                        "House Rent Agreement","Electricity Bill","Passport","Driving License","Bank Statement"].map(o=>typeof o==="string"?{value:o,label:o}:o)}
+                        "House Rent Agreement","Aadhar Card","Electricity Bill","Passport","Driving License","Bank Statement"].map(o=>typeof o==="string"?{value:o,label:o}:o)}
                       style={{marginBottom:10}}/>
                     <UploadZone label="Address Proof Document" required accept=".pdf,.png,.jpg,.jpeg"
                       value={addressProof} onChange={setAddressProof}/>
@@ -3165,17 +3164,14 @@ function OnboardingWizard({ employee, onSubmit, toast }) {
             <WizardStep step={step} total={TOTAL} onNext={next} onPrev={prev} onSave={saveDraft} saving={saving}>
               <div style={{background:T.infoLight, border:`1px solid ${T.infoBorder}`, borderRadius:10,
                 padding:"12px 16px", marginBottom:16, fontSize:13, color:T.info}}>
-                ℹ️ <strong>Both PNG and JPEG required</strong> — Upload your passport-size photo in both formats before proceeding.
+                ℹ️ <strong>Passport Photo</strong> — Upload your passport-size photo in JPEG or PNG format.
               </div>
 
               <FormSection icon="📷" title="Passport Size Photograph">
                 <FormGrid cols={2}>
-                  <UploadZone label="Photo — PNG Format" required accept=".png"
-                    value={photoPng} onChange={setPhotoPng}
-                    hint="White background, plain attire, recent photo"/>
-                  <UploadZone label="Photo — JPEG Format" required accept=".jpg,.jpeg"
-                    value={photoJpeg} onChange={setPhotoJpeg}
-                    hint="Same photo, saved as JPEG/JPG"/>
+                  <UploadZone label="Passport Photo" required accept=".jpg,.jpeg,.png"
+                    value={passportPhoto} onChange={setPassportPhoto}
+                    hint="JPEG or PNG format preferred"/>
                 </FormGrid>
                 <div style={{marginTop:16, background:T.bg, border:`1px solid ${T.border}`,
                   borderRadius:10, padding:"14px 16px"}}>
@@ -3260,9 +3256,8 @@ function OnboardingWizard({ employee, onSubmit, toast }) {
                   ["Experience Letter", expLetter?"✅":"⚠ Missing"],
                   ["Relieving Letter", relieving?"✅":"⚠ Missing"],
                   ["Salary Slips (3)", slip1&&slip2&&slip3?"✅ All 3":"⚠ Missing some"],
-                  ["Photo PNG", photoPng?"✅":"⚠ Missing"],
-                  ["Photo JPEG", photoJpeg?"✅":"⚠ Missing"],
-                ]},
+                  ["Passport Photo", passportPhoto?"✅":"⚠ Missing"],
+                  ]},
               ].map(s=>(
                 <div key={s.title} style={{background:T.surface, border:`1px solid ${T.border}`,
                   borderRadius:12, overflow:"hidden", marginBottom:12}}>
